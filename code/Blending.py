@@ -95,3 +95,46 @@ blended_obj = my_scene.add_shape(blended_x, colors=blended_color)
 img=my_scene.render()
 
 plt.show(img)
+
+def marching_squares(f, grid_size, threshold=0):
+    contour_points = []
+
+    for i in range(grid_size - 1):
+        for j in range(grid_size - 1):
+            v1 = f[i, j]
+            v2 = f[i, j + 1]
+            v3 = f[i + 1, j + 1]
+            v4 = f[i + 1, j]
+
+            idx = int(v1 > threshold) + int(v2 > threshold) * 2 + int(v3 > threshold) * 4 + int(v4 > threshold) * 8
+
+            if idx in [3, 6, 9, 12]:
+                t = (threshold - v1) / (v2 - v1)
+                contour_points.append([i + t, j])
+
+            elif idx in [5, 10]:
+                t = (threshold - v4) / (v3 - v4)
+                contour_points.append([i + 1, j + t])
+
+            elif idx in [7, 14]:
+                t = (threshold - v3) / (v4 - v3)
+                contour_points.append([i + t, j + 1])
+
+            elif idx in [11, 13]:
+                t = (threshold - v2) / (v1 - v2)
+                contour_points.append([i, j + t])
+
+            elif idx in [1, 2, 4, 8]:
+                contour_points.append([i + 0.5, j + 0.5])
+
+    return np.array(contour_points)
+
+x = np.linspace(-1, 1, grid_size)
+y = np.linspace(-1, 1, grid_size)
+xx, yy = np.meshgrid(x, y)
+z = np.sin(xx**2 + yy**2)
+
+contour_points = marching_squares(z, grid_size)
+
+plt.scatter(contour_points[:, 0], contour_points[:, 1])
+plt.show()
